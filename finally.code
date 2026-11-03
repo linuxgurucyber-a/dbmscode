@@ -1,1 +1,806 @@
-j
+# Exercise 1 - DDL: Create, alter, truncate, and drop
+## ex1.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex01_ddl;
+USE dbms_ex01_ddl;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Age INT,
+    Marks INT
+);
+
+ALTER TABLE Student
+ADD Email VARCHAR(100);
+
+INSERT INTO Student (Student_ID, Name, Department, Age, Marks, Email)
+VALUES (101, 'Arun', 'CSE', 20, 85, 'arun@example.com');
+
+SHOW COLUMNS FROM Student;
+SELECT * FROM Student;
+
+TRUNCATE TABLE Student;
+SELECT * FROM Student;
+
+DROP TABLE Student;
+SHOW TABLES;
+```
+
+# Exercise 2 - DML: Insert, update, delete, and retrieve
+
+## ex2.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex02_dml;
+USE dbms_ex02_dml;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Age INT,
+    Marks INT
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Age, Marks) VALUES
+(101, 'Arun', 'CSE', 20, 85),
+(102, 'Priya', 'IT', 21, 90),
+(103, 'Kumar', 'CSE', 20, 75),
+(104, 'Divya', 'ECE', 22, 88),
+(105, 'Ravi', 'IT', 21, 65);
+
+SELECT * FROM Student ORDER BY Student_ID;
+
+UPDATE Student
+SET Marks = 95
+WHERE Student_ID = 101;
+
+SELECT * FROM Student WHERE Student_ID = 101;
+
+DELETE FROM Student
+WHERE Student_ID = 105;
+
+SELECT * FROM Student ORDER BY Student_ID;
+```
+
+# Exercise 3 - WHERE clauses and aggregate functions
+
+## ex3.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex03_aggregates;
+USE dbms_ex03_aggregates;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Age INT,
+    Marks INT
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Age, Marks) VALUES
+(101, 'Arun', 'CSE', 20, 85),
+(102, 'Priya', 'IT', 21, 90),
+(103, 'Kumar', 'CSE', 20, 75),
+(104, 'Divya', 'ECE', 22, 88),
+(105, 'Ravi', 'IT', 21, 65);
+
+SELECT * FROM Student WHERE Marks > 80;
+SELECT * FROM Student WHERE Department = 'CSE';
+
+SELECT COUNT(*) AS Total_Students FROM Student;
+SELECT MAX(Marks) AS Highest_Mark FROM Student;
+SELECT MIN(Marks) AS Lowest_Mark FROM Student;
+SELECT ROUND(AVG(Marks), 2) AS Average_Mark FROM Student;
+SELECT SUM(Marks) AS Total_Marks FROM Student;
+```
+
+# Exercise 4 - DISTINCT, ORDER BY, GROUP BY, HAVING, and LIKE
+
+## ex4.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex04_grouping;
+USE dbms_ex04_grouping;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Age INT,
+    Marks INT
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Age, Marks) VALUES
+(101, 'Arun', 'CSE', 20, 85),
+(102, 'Priya', 'IT', 21, 90),
+(103, 'Kumar', 'CSE', 20, 75),
+(104, 'Divya', 'ECE', 22, 88),
+(105, 'Ravi', 'IT', 21, 65);
+
+-- Unique departments
+SELECT DISTINCT Department FROM Student;
+
+-- Highest marks first
+SELECT * FROM Student ORDER BY Marks DESC, Student_ID;
+
+-- Count students in each department
+SELECT Department, COUNT(*) AS Total_Students
+FROM Student
+GROUP BY Department
+ORDER BY Department;
+
+-- Departments with more than one student
+SELECT Department, COUNT(*) AS Total_Students
+FROM Student
+GROUP BY Department
+HAVING COUNT(*) > 1
+ORDER BY Department;
+
+-- Names starting with A, ending with a, or containing vi
+SELECT * FROM Student WHERE Name LIKE 'A%';
+SELECT * FROM Student WHERE Name LIKE '%a';
+SELECT * FROM Student WHERE Name LIKE '%vi%';
+```
+
+# Exercise 5 - INNER, LEFT, RIGHT, and FULL OUTER JOIN
+
+## ex5.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex05_joins;
+USE dbms_ex05_joins;
+
+DROP TABLE IF EXISTS Student_Details;
+DROP TABLE IF EXISTS Department;
+
+CREATE TABLE Department (
+    Dept_ID INT PRIMARY KEY,
+    Dept_Name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE Student_Details (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Dept_ID INT NULL,
+    FOREIGN KEY (Dept_ID) REFERENCES Department(Dept_ID)
+);
+
+INSERT INTO Department (Dept_ID, Dept_Name) VALUES
+(1, 'CSE'),
+(2, 'IT'),
+(3, 'ECE'),
+(4, 'MECH');
+
+INSERT INTO Student_Details (Student_ID, Name, Dept_ID) VALUES
+(101, 'Arun', 1),
+(102, 'Priya', 2),
+(103, 'Kumar', 1),
+(104, 'Divya', 3),
+(105, 'Ravi', NULL);
+
+-- A. INNER JOIN: matching rows only
+SELECT S.Student_ID, S.Name, D.Dept_Name
+FROM Student_Details AS S
+INNER JOIN Department AS D ON S.Dept_ID = D.Dept_ID
+ORDER BY S.Student_ID;
+
+-- B. LEFT JOIN: all students, including students without a department
+SELECT S.Student_ID, S.Name, D.Dept_Name
+FROM Student_Details AS S
+LEFT JOIN Department AS D ON S.Dept_ID = D.Dept_ID
+ORDER BY S.Student_ID;
+
+-- C. RIGHT JOIN: all departments, including departments without students
+SELECT S.Student_ID, S.Name, D.Dept_Name
+FROM Student_Details AS S
+RIGHT JOIN Department AS D ON S.Dept_ID = D.Dept_ID
+ORDER BY D.Dept_ID, S.Student_ID;
+
+-- D. FULL OUTER JOIN equivalent for MySQL:
+SELECT S.Student_ID, S.Name, D.Dept_Name
+FROM Student_Details AS S
+LEFT JOIN Department AS D ON S.Dept_ID = D.Dept_ID
+UNION ALL
+SELECT S.Student_ID, S.Name, D.Dept_Name
+FROM Department AS D
+LEFT JOIN Student_Details AS S ON S.Dept_ID = D.Dept_ID
+WHERE S.Student_ID IS NULL
+ORDER BY Student_ID;
+```
+
+# Exercise 6 - Nested queries (subqueries)
+
+## ex6.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex06_subqueries;
+USE dbms_ex06_subqueries;
+
+DROP TABLE IF EXISTS Student;
+DROP TABLE IF EXISTS Department;
+
+CREATE TABLE Department (
+    Dept_ID INT PRIMARY KEY,
+    Dept_Name VARCHAR(30) NOT NULL UNIQUE
+);
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Dept_ID INT,
+    Marks INT,
+    FOREIGN KEY (Dept_ID) REFERENCES Department(Dept_ID)
+);
+
+INSERT INTO Department (Dept_ID, Dept_Name) VALUES
+(1, 'CSE'),
+(2, 'IT'),
+(3, 'ECE');
+
+INSERT INTO Student (Student_ID, Name, Dept_ID, Marks) VALUES
+(101, 'Arun', 1, 85),
+(102, 'Priya', 2, 90),
+(103, 'Kumar', 1, 75),
+(104, 'Divya', 3, 88),
+(105, 'Ravi', 2, 65);
+
+-- Students in the CSE department
+SELECT * FROM Student
+WHERE Dept_ID = (
+    SELECT Dept_ID FROM Department WHERE Dept_Name = 'CSE'
+);
+
+-- Students with marks above the overall average
+SELECT * FROM Student
+WHERE Marks > (SELECT AVG(Marks) FROM Student);
+
+-- Student or students with the highest marks
+SELECT * FROM Student
+WHERE Marks = (SELECT MAX(Marks) FROM Student);
+```
+
+# Exercise 7 - Pattern matching with LIKE, % and _
+
+## ex7.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex07_patterns;
+USE dbms_ex07_patterns;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30),
+    Marks INT
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Marks) VALUES
+(101, 'Arun', 'CSE', 85),
+(102, 'Priya', 'IT', 90),
+(103, 'Kumar', 'CSE', 75),
+(104, 'Divya', 'ECE', 88),
+(105, 'Ravi', 'IT', 65);
+
+-- Names starting with A
+SELECT * FROM Student WHERE Name LIKE 'A%';
+
+-- Names ending with a
+SELECT * FROM Student WHERE Name LIKE '%a';
+
+-- Names containing vi
+SELECT * FROM Student WHERE Name LIKE '%vi%';
+
+-- Names with exactly four characters
+SELECT * FROM Student WHERE Name LIKE '____';
+
+-- Names whose second character is r
+SELECT * FROM Student WHERE Name LIKE '_r%';
+
+-- Names starting with P
+SELECT * FROM Student WHERE Name LIKE 'P%';
+```
+
+# Exercise 8 - Database constraints
+
+## ex8.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex08_constraints;
+USE dbms_ex08_constraints;
+
+DROP TABLE IF EXISTS Student;
+DROP TABLE IF EXISTS Department;
+
+CREATE TABLE Department (
+    Dept_ID INT PRIMARY KEY,
+    Dept_Name VARCHAR(30) NOT NULL UNIQUE
+);
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    Age INT NOT NULL CHECK (Age >= 17),
+    Marks INT NOT NULL CHECK (Marks BETWEEN 0 AND 100),
+    Dept_ID INT NOT NULL,
+    FOREIGN KEY (Dept_ID) REFERENCES Department(Dept_ID)
+);
+
+INSERT INTO Department (Dept_ID, Dept_Name) VALUES
+(1, 'CSE'),
+(2, 'IT');
+
+INSERT INTO Student (Student_ID, Name, Email, Age, Marks, Dept_ID) VALUES
+(101, 'Arun', 'arun@example.com', 20, 85, 1),
+(102, 'Priya', 'priya@example.com', 21, 90, 2);
+
+SELECT * FROM Student ORDER BY Student_ID;
+
+-- Optional test: run separately; this row should be rejected because Age is below 17.
+-- INSERT INTO Student (Student_ID, Name, Email, Age, Marks, Dept_ID)
+-- VALUES (103, 'Kumar', 'kumar@example.com', 16, 75, 1);
+```
+
+# Exercise 9 - Stored procedures and a stored function
+
+## ex9.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex09_routines;
+USE dbms_ex09_routines;
+
+DROP PROCEDURE IF EXISTS InsertStudent;
+DROP PROCEDURE IF EXISTS UpdateStudent;
+DROP PROCEDURE IF EXISTS DeleteStudent;
+DROP FUNCTION IF EXISTS GetGrade;
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Marks INT NOT NULL CHECK (Marks BETWEEN 0 AND 100)
+);
+
+DELIMITER //
+
+CREATE PROCEDURE InsertStudent(
+    IN p_ID INT,
+    IN p_Name VARCHAR(50),
+    IN p_Marks INT
+)
+BEGIN
+    INSERT INTO Student (Student_ID, Name, Marks)
+    VALUES (p_ID, p_Name, p_Marks);
+END//
+
+CREATE PROCEDURE UpdateStudent(
+    IN p_ID INT,
+    IN p_Marks INT
+)
+BEGIN
+    UPDATE Student
+    SET Marks = p_Marks
+    WHERE Student_ID = p_ID;
+END//
+
+CREATE PROCEDURE DeleteStudent(IN p_ID INT)
+BEGIN
+    DELETE FROM Student
+    WHERE Student_ID = p_ID;
+END//
+
+CREATE FUNCTION GetGrade(p_Marks INT)
+RETURNS VARCHAR(2)
+DETERMINISTIC
+NO SQL
+BEGIN
+    IF p_Marks >= 90 THEN
+        RETURN 'A+';
+    ELSEIF p_Marks >= 80 THEN
+        RETURN 'A';
+    ELSEIF p_Marks >= 70 THEN
+        RETURN 'B';
+    ELSEIF p_Marks >= 60 THEN
+        RETURN 'C';
+    ELSE
+        RETURN 'F';
+    END IF;
+END//
+
+DELIMITER ;
+
+CALL InsertStudent(101, 'Arun', 85);
+CALL InsertStudent(102, 'Priya', 95);
+SELECT * FROM Student ORDER BY Student_ID;
+
+CALL UpdateStudent(101, 92);
+SELECT * FROM Student ORDER BY Student_ID;
+
+SELECT Name, Marks, GetGrade(Marks) AS Grade
+FROM Student
+ORDER BY Student_ID;
+
+CALL DeleteStudent(102);
+SELECT * FROM Student ORDER BY Student_ID;
+```
+
+# Exercise 10 - Transactions and access control
+
+## ex10.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex10_transactions;
+USE dbms_ex10_transactions;
+
+DROP TABLE IF EXISTS Account;
+
+CREATE TABLE Account (
+    Account_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Balance DECIMAL(10,2) NOT NULL
+) ENGINE = InnoDB;
+
+INSERT INTO Account (Account_ID, Name, Balance) VALUES
+(101, 'Arun', 10000.00),
+(102, 'Priya', 8000.00);
+
+-- A. Starting balances
+SELECT * FROM Account ORDER BY Account_ID;
+
+-- B. COMMIT: transfer 1000 from account 101 to account 102
+START TRANSACTION;
+UPDATE Account SET Balance = Balance - 1000.00 WHERE Account_ID = 101;
+UPDATE Account SET Balance = Balance + 1000.00 WHERE Account_ID = 102;
+COMMIT;
+SELECT * FROM Account ORDER BY Account_ID;
+
+-- C. ROLLBACK: undo this uncommitted 500 deduction
+START TRANSACTION;
+UPDATE Account SET Balance = Balance - 500.00 WHERE Account_ID = 101;
+ROLLBACK;
+SELECT * FROM Account ORDER BY Account_ID;
+
+-- D. SAVEPOINT: keep the first deduction and undo the second
+START TRANSACTION;
+UPDATE Account SET Balance = Balance - 500.00 WHERE Account_ID = 101;
+SAVEPOINT sp1;
+UPDATE Account SET Balance = Balance - 1000.00 WHERE Account_ID = 102;
+ROLLBACK TO SAVEPOINT sp1;
+COMMIT;
+SELECT * FROM Account ORDER BY Account_ID;
+
+-- E. GRANT: run as a MySQL administrator; replace this sample password.
+CREATE USER IF NOT EXISTS 'student_user'@'localhost'
+IDENTIFIED BY 'ReplaceWithYourStrongPassword';
+
+GRANT SELECT, INSERT, UPDATE
+ON dbms_ex10_transactions.Account
+TO 'student_user'@'localhost';
+
+SHOW GRANTS FOR 'student_user'@'localhost';
+
+-- F. REVOKE the INSERT privilege
+REVOKE INSERT
+ON dbms_ex10_transactions.Account
+FROM 'student_user'@'localhost';
+
+SHOW GRANTS FOR 'student_user'@'localhost';
+```
+
+# Exercise 11 - INSERT, UPDATE, and DELETE triggers
+
+## ex11.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex11_triggers;
+USE dbms_ex11_triggers;
+
+DROP TRIGGER IF EXISTS After_Student_Insert;
+DROP TRIGGER IF EXISTS After_Student_Update;
+DROP TRIGGER IF EXISTS After_Student_Delete;
+DROP TABLE IF EXISTS Student;
+DROP TABLE IF EXISTS Student_Audit;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Marks INT NOT NULL CHECK (Marks BETWEEN 0 AND 100)
+);
+
+CREATE TABLE Student_Audit (
+    Audit_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Student_ID INT NOT NULL,
+    Action_Type VARCHAR(20) NOT NULL,
+    Old_Marks INT NULL,
+    New_Marks INT NULL,
+    Action_Time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+DELIMITER //
+
+CREATE TRIGGER After_Student_Insert
+AFTER INSERT ON Student
+FOR EACH ROW
+BEGIN
+    INSERT INTO Student_Audit (Student_ID, Action_Type, New_Marks)
+    VALUES (NEW.Student_ID, 'INSERT', NEW.Marks);
+END//
+
+CREATE TRIGGER After_Student_Update
+AFTER UPDATE ON Student
+FOR EACH ROW
+BEGIN
+    INSERT INTO Student_Audit (Student_ID, Action_Type, Old_Marks, New_Marks)
+    VALUES (OLD.Student_ID, 'UPDATE', OLD.Marks, NEW.Marks);
+END//
+
+CREATE TRIGGER After_Student_Delete
+AFTER DELETE ON Student
+FOR EACH ROW
+BEGIN
+    INSERT INTO Student_Audit (Student_ID, Action_Type, Old_Marks)
+    VALUES (OLD.Student_ID, 'DELETE', OLD.Marks);
+END//
+
+DELIMITER ;
+
+INSERT INTO Student (Student_ID, Name, Marks) VALUES (101, 'Arun', 85);
+UPDATE Student SET Marks = 95 WHERE Student_ID = 101;
+DELETE FROM Student WHERE Student_ID = 101;
+
+SELECT Audit_ID, Student_ID, Action_Type, Old_Marks, New_Marks, Action_Time
+FROM Student_Audit
+ORDER BY Audit_ID;
+```
+
+# Exercise 12 - Department-wise student count and average marks
+
+## ex12.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex12_report;
+USE dbms_ex12_report;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30) NOT NULL,
+    Marks INT NOT NULL
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Marks) VALUES
+(101, 'Arun', 'CSE', 85),
+(102, 'Priya', 'IT', 90),
+(103, 'Kumar', 'CSE', 75),
+(104, 'Divya', 'ECE', 88),
+(105, 'Ravi', 'IT', 70),
+(106, 'Meena', 'ECE', 92);
+
+SELECT
+    Department,
+    COUNT(*) AS Total_Students,
+    ROUND(AVG(Marks), 2) AS Average_Marks
+FROM Student
+GROUP BY Department
+ORDER BY Department;
+```
+
+# Exercise 13 - Indexes for efficient searches
+
+## ex13.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex13_indexes;
+USE dbms_ex13_indexes;
+
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30) NOT NULL,
+    Marks INT NOT NULL
+);
+
+INSERT INTO Student (Student_ID, Name, Department, Marks) VALUES
+(101, 'Arun', 'CSE', 85),
+(102, 'Priya', 'IT', 90),
+(103, 'Kumar', 'CSE', 75),
+(104, 'Divya', 'ECE', 88),
+(105, 'Ravi', 'IT', 70);
+
+CREATE INDEX idx_student_name ON Student (Name);
+CREATE INDEX idx_student_department ON Student (Department);
+CREATE INDEX idx_department_marks ON Student (Department, Marks);
+
+SELECT * FROM Student WHERE Name = 'Priya';
+SELECT * FROM Student WHERE Department = 'CSE';
+SELECT * FROM Student WHERE Department = 'CSE' AND Marks > 80;
+
+SHOW INDEX FROM Student;
+EXPLAIN SELECT * FROM Student WHERE Name = 'Priya';
+```
+
+# Exercise 14 - Student course registration with primary and foreign keys
+
+## ex14.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex14_registration;
+USE dbms_ex14_registration;
+
+DROP TABLE IF EXISTS Registration;
+DROP TABLE IF EXISTS Course;
+DROP TABLE IF EXISTS Student;
+
+CREATE TABLE Student (
+    Student_ID INT PRIMARY KEY,
+    Student_Name VARCHAR(50) NOT NULL,
+    Department VARCHAR(30)
+);
+
+CREATE TABLE Course (
+    Course_ID INT PRIMARY KEY,
+    Course_Name VARCHAR(50) NOT NULL,
+    Credits INT NOT NULL CHECK (Credits > 0)
+);
+
+CREATE TABLE Registration (
+    Registration_ID INT PRIMARY KEY,
+    Student_ID INT NOT NULL,
+    Course_ID INT NOT NULL,
+    Registration_Date DATE NOT NULL,
+    CONSTRAINT uq_student_course UNIQUE (Student_ID, Course_ID),
+    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID),
+    FOREIGN KEY (Course_ID) REFERENCES Course(Course_ID)
+);
+
+INSERT INTO Student (Student_ID, Student_Name, Department) VALUES
+(101, 'Arun', 'CSE'),
+(102, 'Priya', 'IT'),
+(103, 'Kumar', 'CSE');
+
+INSERT INTO Course (Course_ID, Course_Name, Credits) VALUES
+(201, 'DBMS', 4),
+(202, 'Computer Networks', 3),
+(203, 'Cyber Security', 4);
+
+INSERT INTO Registration (Registration_ID, Student_ID, Course_ID, Registration_Date) VALUES
+(1, 101, 201, CURRENT_DATE),
+(2, 101, 203, CURRENT_DATE),
+(3, 102, 202, CURRENT_DATE),
+(4, 103, 201, CURRENT_DATE);
+
+SELECT
+    S.Student_ID,
+    S.Student_Name,
+    C.Course_Name,
+    R.Registration_Date
+FROM Registration AS R
+INNER JOIN Student AS S ON R.Student_ID = S.Student_ID
+INNER JOIN Course AS C ON R.Course_ID = C.Course_ID
+ORDER BY S.Student_ID, C.Course_ID;
+```
+
+# Exercise 15 - Transfer money between two accounts
+
+## ex15.code
+
+```sql
+CREATE DATABASE IF NOT EXISTS dbms_ex15_banking;
+USE dbms_ex15_banking;
+
+DROP PROCEDURE IF EXISTS TransferMoney;
+DROP TABLE IF EXISTS Account;
+
+CREATE TABLE Account (
+    Account_ID INT PRIMARY KEY,
+    Account_Name VARCHAR(50) NOT NULL,
+    Balance DECIMAL(10,2) NOT NULL CHECK (Balance >= 0)
+) ENGINE = InnoDB;
+
+INSERT INTO Account (Account_ID, Account_Name, Balance) VALUES
+(101, 'Arun', 10000.00),
+(102, 'Priya', 5000.00);
+
+DELIMITER //
+
+CREATE PROCEDURE TransferMoney(
+    IN p_FromAccount INT,
+    IN p_ToAccount INT,
+    IN p_Amount DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_Balance DECIMAL(10,2);
+    DECLARE v_AccountCount INT DEFAULT 0;
+    DECLARE v_LockedAccount INT;
+    DECLARE v_TransactionStarted BOOLEAN DEFAULT FALSE;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        IF v_TransactionStarted THEN
+            ROLLBACK;
+        END IF;
+        RESIGNAL;
+    END;
+
+    IF p_Amount IS NULL OR p_Amount <= 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Amount must be positive';
+    END IF;
+
+    IF p_FromAccount IS NULL OR p_ToAccount IS NULL
+       OR p_FromAccount = p_ToAccount THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Enter two different valid account numbers';
+    END IF;
+
+    START TRANSACTION;
+    SET v_TransactionStarted = TRUE;
+
+    SELECT COUNT(*) INTO v_AccountCount
+    FROM Account
+    WHERE Account_ID IN (p_FromAccount, p_ToAccount);
+
+    IF v_AccountCount <> 2 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Invalid account number';
+    END IF;
+
+    -- Lock both rows in ascending account order
+    IF p_FromAccount < p_ToAccount THEN
+        SELECT Account_ID INTO v_LockedAccount
+        FROM Account WHERE Account_ID = p_FromAccount FOR UPDATE;
+        SELECT Account_ID INTO v_LockedAccount
+        FROM Account WHERE Account_ID = p_ToAccount FOR UPDATE;
+    ELSE
+        SELECT Account_ID INTO v_LockedAccount
+        FROM Account WHERE Account_ID = p_ToAccount FOR UPDATE;
+        SELECT Account_ID INTO v_LockedAccount
+        FROM Account WHERE Account_ID = p_FromAccount FOR UPDATE;
+    END IF;
+
+    SELECT Balance INTO v_Balance
+    FROM Account
+    WHERE Account_ID = p_FromAccount;
+
+    IF v_Balance < p_Amount THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Insufficient balance';
+    END IF;
+
+    UPDATE Account
+    SET Balance = Balance - p_Amount
+    WHERE Account_ID = p_FromAccount;
+
+    UPDATE Account
+    SET Balance = Balance + p_Amount
+    WHERE Account_ID = p_ToAccount;
+
+    COMMIT;
+    SET v_TransactionStarted = FALSE;
+END//
+
+DELIMITER ;
+
+SELECT * FROM Account ORDER BY Account_ID;
+CALL TransferMoney(101, 102, 2000.00);
+SELECT * FROM Account ORDER BY Account_ID;
+```
